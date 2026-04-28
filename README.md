@@ -17,3 +17,19 @@ terraform validate
 terraform plan
 terraform apply
 
+# Examen Terraform - S3 Static Website
+
+## 🌐 URL del sitio desplegado
+http://terraform-exam-chayanne-2026.s3-website-us-east-1.amazonaws.com/
+
+## Descripción
+Este proyecto despliega una página web estática en AWS S3 usando Terraform.
+
+## Tecnologías
+- Terraform
+- AWS S3
+
+## Ejecución
+```bash
+terraform init
+terraform apply

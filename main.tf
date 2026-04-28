@@ -4,7 +4,7 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 5.0" # Versión del provider AWS
+      version = "~> 5.0" # Provider oficial de AWS
     }
   }
 }
@@ -23,6 +23,16 @@ resource "aws_s3_bucket" "website_bucket" {
     Environment = "dev"
     Owner       = var.owner_name
     Project     = "Betek"
+  }
+}
+
+# 🔴 RECURSO CLAVE EN S3 MODERNO (evita uso de ACLs)
+# Controla la propiedad de los objetos para permitir políticas públicas
+resource "aws_s3_bucket_ownership_controls" "ownership" {
+  bucket = aws_s3_bucket.website_bucket.id
+
+  rule {
+    object_ownership = "BucketOwnerPreferred"
   }
 }
 
@@ -61,13 +71,16 @@ resource "aws_s3_bucket_policy" "public_policy" {
   })
 }
 
-# Sube el archivo index.html al bucket
+# Sube el archivo index.html al bucket SIN usar ACL
 resource "aws_s3_object" "index_file" {
   bucket       = aws_s3_bucket.website_bucket.id
   key          = "index.html"
-  source       = "index.html" # Archivo local que se cargará
+  source       = "index.html"
   content_type = "text/html"
 
-  # Asegura que el bucket esté configurado antes de subir el archivo
-  depends_on = [aws_s3_bucket_website_configuration.website_config]
+  # Espera a que el bucket tenga ownership correcto antes de subir el objeto
+  depends_on = [
+    aws_s3_bucket_website_configuration.website_config,
+    aws_s3_bucket_ownership_controls.ownership
+  ]
 }
